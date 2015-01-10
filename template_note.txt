@@ -1,14 +1,14 @@
-{{MyTitle|| {title} }}
+{{{{MyTitle|| {title} }}}}
 
-{{Preknowledge|
+{{{{Preknowledge|
 {content}
-|Title=Notes}}
+|Title=Notes}}}}
 
 
-{{Activity|
+{{{{Activity|
 <syntaxhighlight lang="c">
 {data}
 </syntaxhighlight>
-|Title=Data}}
+|Title=Data}}}}
 
 [[Category:NullModeData]]
