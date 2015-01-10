@@ -76,7 +76,8 @@ if __name__ == '__main__':
     notesdict = dict([parse_anchor_notes(e) for e in notes_files])
     ecokeys = ecodict.keys()
     ecokeys.sort()
-    #create_shelve(notesdict)  # is the shelve created?
+    #create_shelve(notesdict)  #  Create a shelve as cache for testing the first time.
+    # Is the shelve created?
     fnotes = shelve.open('notes.dat')
     pages = []
 
@@ -85,8 +86,8 @@ if __name__ == '__main__':
         data, species, sites = parse_ecosim_file(ecodict.get(k))
         d = fnotes.get(k)
         if not d:
-            print 'no encontrado', k
-            break
+            print 'Not found', k
+            continue
         d['data'] = data
         create_page(d)
         pages.append([d.get('title'), species, sites])
