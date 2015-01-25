@@ -4,7 +4,7 @@ USER = ''
 PWD = ''
 
 # where it is going to create the tree
-WEBASE = "User:Lmorillas/Sandbox/NullModelData"
+WEBASE = "NullModelData"
 
 # we connection
 site = mwclient.Site('wikieducator.org', path="/")
@@ -61,12 +61,19 @@ def new_page_content(d):
     d --> dictionary: title, content, data
     '''
     newp = TEMPLATE.format(**d)
-    newp = newp.replace('}', '}}')
-    newp = newp.replace('{', '{{')
+#    newp = newp.replace('}', '}}')
+#    newp = newp.replace('{', '{{')
     newp = newp.replace('\n ', '\n')
     return newp
 
-def create_page(d):
+def create_page(d, src=None):
+    '''
+
+    '''
     title = d.get('title').strip()
-    newpage = site.Pages[WEBASE + '/' + title]
+    title = WEBASE + '/' + title
+    d['urlsrc'] = src
+    d['namesrc'] = src.split('/')[-1].strip().lower()
+
+    newpage = site.Pages[title]
     newpage.save(new_page_content(d), summary='Creating null mode data page for' + title)

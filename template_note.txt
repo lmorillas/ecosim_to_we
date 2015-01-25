@@ -1,14 +1,13 @@
 {{{{MyTitle|| {title} }}}}
 
-{{{{Preknowledge|
+{{{{NMNotes|
 {content}
-|Title=Notes}}}}
+}}}}
 
 
-{{{{Activity|
-<syntaxhighlight lang="c">
-{data}
-</syntaxhighlight>
-|Title=Data}}}}
+{{{{NMData|
+data={data}
+|urlsrc={urlsrc}
+|namesrc={namesrc}
+}}}}
 
-[[Category:NullModeData]]
