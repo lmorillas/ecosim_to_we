@@ -4,3 +4,6 @@
 
 Data from http://academics.smcvt.edu/dmccabe/teaching/Community/NullModelData.html
 
+For testing: 
+  
+  $ python parse_ecosim_files.py
