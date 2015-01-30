@@ -2,7 +2,6 @@ from amara.bindery import html
 from amara.lib import U
 import urllib
 import urlparse
-import shelve
 import time
 
 '''
@@ -150,7 +149,3 @@ if __name__ == '__main__':
     change_titles(pages)
 
     json.dump(pages, open('pages_to_create.json', 'w'))
-
-
-    #pages created for debugging
-
