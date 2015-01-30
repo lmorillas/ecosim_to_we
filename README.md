@@ -20,3 +20,13 @@ To extract notes and data from the web source and to create new pages in Wikiedu
 * Create pages at Wikieducator from the http://wikieducator.org/NullModelData path
   * Be care with titles because they are repated
 * Create the new index with a wiki sortable table
+
+## Requirements
+* Amara
+* mwclient
+
+## Execute
+```
+$ python parse_ecosim_files.py
+$ python create_we_pages.py
+```
