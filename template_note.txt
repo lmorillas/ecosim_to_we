@@ -7,7 +7,7 @@
 
 {{{{NMData|
 data={data}
-|urlsrc={urlsrc}
-|namesrc={namesrc}
+|urlsrc={source}
+|namesrc={name}
 }}}}
 
