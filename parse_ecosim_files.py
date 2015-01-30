@@ -3,14 +3,25 @@ from amara.lib import U
 import urllib
 import urlparse
 import shelve
-from create_we_pages import *
 import time
+
+'''
+This script extract data from html pages and write the data into a .json file ready
+to create the mediawiki / wikieducator pages
+
+'''
 
 
 BASE = 'http://academics.smcvt.edu/dmccabe/teaching/Community/'
 
 
 def parse_notes_file(f):
+    '''
+    Parse file like stream and returns title & content.
+
+    Title is the first line of the file
+    Content is delimited by 'beginnotes' and 'endnotes' words
+    '''
     title = f.readline().strip()
     content = []
     for line in f:
@@ -22,22 +33,36 @@ def parse_notes_file(f):
         else:
             line = line.strip() or '\n\n'
             content.append(line)
-    return {'title': title, 'content': ' '.join(content)}
+    content = ' '.join(content)
+    content = content.decode('utf-8', 'replace')
+    return {'title': title, 'content': content}
 
 
 def parse_anchor_ecosim(anchor):
+    '''
+    It returns text and href url from an html anchor for ecosim
+    '''
     name = U(anchor).lower().strip()
     url = urlparse.urljoin(BASE, anchor.href)
     return name, url
 
+
 def parse_anchor_notes(anchor):
+    '''
+    It returns the text and href url from an html anchor for ecosim notes. Removes the
+    'Notes adn data from:' words from teh text.
+    '''
     name = U(anchor).replace('Notes and data from:', '').lower().strip()
     url = urlparse.urljoin(BASE, anchor.href)
     return name, url
 
 
 def parse_ecosim_file(url):
-    '''returns data, species, files'''
+    '''
+    Parse the url from an ecosim data file.
+
+    It returns the data, species, files
+    '''
     f = urllib.urlopen(url)
     lines = [l for l in f.readlines()]
     species = len(lines) -1
@@ -45,62 +70,87 @@ def parse_ecosim_file(url):
     return ''.join(lines), species, sites
 
 
-def create_shelve(notesdict):
-    '''
-    Create a notes.dat shelve file. For testing
-    key:
-    value: dict: title / content of the notes file
-    '''
-    fnotes = shelve.open('notes.dat')
+def parse_all_notes(notesdict):
+    allnotes = {}
     for k in notesdict:
-        print k
-        fnotes[str(k)] = parse_notes_file(urllib.urlopen(notesdict.get(k)))
-
+        print 'parsing notes', k
+        allnotes[str(k)] = parse_notes_file(urllib.urlopen(notesdict.get(k)))
     #typo
-    fnotes['1000islm.txt'] = fnotes.pop('notes and \n\t\t\t\t\t\tdata from:1000islm.txt')
-    fnotes.sync()
-    fnotes.close()
+    allnotes['1000islm.txt'] = allnotes.pop('notes and \n\t\t\t\t\t\tdata from:1000islm.txt')
+    return allnotes
+
+def change_titles(pages):
+    '''
+    Adds numbres to repeated titles
+    '''
+    titles = {}
+
+    def numbertit(title, n):
+        pos = title.find('(')
+        return title[:pos]+str(n)+' '+title[pos:]
+
+    for p in pages:
+        title = p.get('title')
+        n = titles.get(title, 0)
+        if n == 0:
+            titles[title] = 1
+        else:
+            titles[title] = n + 1
+            title = numbertit(title, n)
+            p['title'] = title
 
 
 if __name__ == '__main__':
+
+    import json
 
     # Main index file
     f = 'http://academics.smcvt.edu/dmccabe/teaching/Community/NullModelData.html'
     doc = html.parse(f)
 
-    #ecosim matrices links
+    #ecosim data links
     ecosim_files = doc.xml_select(u'//a[contains(@href, "matrices_ecosim")]')
+
     # ecosim notes links
     notes_files = doc.xml_select(u'//a[contains(@href, "matrices_notes")]')
 
+    # name -> url
     ecodict = dict([parse_anchor_ecosim(e) for e in ecosim_files])
     notesdict = dict([parse_anchor_notes(e) for e in notes_files])
 
-    # names
+    # names sorted
     ecokeys = ecodict.keys()
-    ecokeys.sort()
 
-    #create_shelve(notesdict)  #  Create a shelve as cache for testing the first time.
-    # Is the shelve created?
-    fnotes = shelve.open('notes.dat')
+    allnotes = parse_all_notes(notesdict)
+
+    # json.dump(allnotes, open('allnotes.json', 'w'))  # if you want to create a dump
+
     pages = []
 
     for x in ecokeys:
+        print 'parsing data', x
         k = str(x)  # element to process Shelve keys must be Str
         eco_url = ecodict.get(k)
         data, species, sites = parse_ecosim_file(eco_url)
-        d = fnotes.get(k)
+        d = allnotes.get(k)
         if not d:
             print 'Not found', k
             continue
         d['data'] = data
-        create_page(d, eco_url)
-        pages.append([d.get('title'), species, sites])
+        #create_page(d, eco_url)
+        d['species'] = species
+        d['sites'] = sites
+        d['source'] = eco_url
+        d['name'] = k
 
-        time.sleep(0.2)
+        pages.append(d)
 
-    create_index(pages)
+        time.sleep(0.2)  # no want DOS
+
+    change_titles(pages)
+
+    json.dump(pages, open('pages_to_create.json', 'w'))
+
 
     #pages created for debugging
-    import json
-    json.dump(pages, open('pages_created.json', 'w'))
+
